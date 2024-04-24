@@ -75,4 +75,21 @@ public class RainbowTableTest {
         assertEquals(table.findReduceLayer(layer1Reduce), 1);
         assertEquals(table.findReduceLayer(layer2Reduce), 2);
     }
+
+    @Test
+    public void testFollowChain() {
+
+        // this hash should be found
+        String layer3Hash = "c0e9a2f2ae2b9300b6f7ef3e63807e84";
+        String password = "0000000";
+        String foundPassword = table.findClearText(layer3Hash);
+        assertEquals(password, foundPassword);
+
+        // random hash which should not be found
+        String randomPassword = "1234";
+        String hash = table.hash(randomPassword);
+
+        foundPassword = table.findClearText(hash);
+        assertEquals(foundPassword, null);
+    }
 }

@@ -38,8 +38,6 @@ public class RainbowTable {
         generatePasswords("0000000", 0, new AtomicInteger());
         initLayers();
         initRainbowTable();
-
-        rainbowtable.keySet().stream().forEach(System.out::println);
     }
 
     public String reduce(String hash, int layer) {
@@ -131,41 +129,52 @@ public class RainbowTable {
     }
 
     private void initRainbowTable() {
-        for(int i = 0; i < 1; i++) {
-
-            String password = passwords.get(i);
-            int overallLayer = 0;
-            int reduceLayer = 0;
-            int hashLayer = 0;
-            String value = hash(password);
+        for(String password : passwords) {
+            int layer = 0;
+            String value = hash(password); // first hash then reduce
 
             // make the reduce and hash chain, each chain has 2000 entries
-            while (overallLayer < 2) {
-                
-                // first hash then reduce => hash has all even ints
-                if(overallLayer % 2 == 0) {
-                    hashChain.get(hashLayer).add(value);
-                    hashLayer++;
-                    value = reduce(value, reduceLayer);
-                } else {
-                    reduceChain.get(reduceLayer).add(value);
-                    reduceLayer++;
-                    value = hash(value);
-                }
-                overallLayer++;
+            while (layer < 1999) {
+                hashChain.get(layer).add(value);   
+                value = reduce(value, layer);
+                reduceChain.get(layer).add(value);
+                value = hash(value);
+                layer++;
             }
 
-            // the last hash value is stored in a map for easy access
-            rainbowtable.put(hash(value), password);
+            // the last reduce value is stored in a map for easy access
+            rainbowtable.put(reduce(value, layer), password);
+            break;
         }
     }
 
     private String followChain(String hash, int layer) {
-        return null;
+        if(layer < 0) {
+            System.out.println("Reached the base case");
+            return null;
+        }
+
+        int currentLayer = layer;
+        String reducedHash = hash;
+
+        // follow the chain
+        while(currentLayer < 2000) {
+            reducedHash = reduce(reducedHash, currentLayer);
+            if(rainbowtable.containsKey(reducedHash)) {
+                String result = rainbowtable.get(reducedHash);
+                return result;
+            }
+
+            reducedHash = hash(reducedHash);
+            currentLayer++;
+        }
+
+        // if hash is not found
+        return followChain(hash, layer-1);
     }
 
-    public String findClearTest(String Hash) {
-        // TO DO IMPLEMENT METHOD
-        return null;
+    public String findClearText(String hash) {
+        String result = followChain(hash, hashChain.size());
+        return result;
     }
 }
