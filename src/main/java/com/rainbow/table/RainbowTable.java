@@ -13,24 +13,26 @@ import java.util.HashSet;
 
 public class RainbowTable {
     
-    private List<String> passwords;
-    private List<Character> characters;
-    private Map<String, String> rainbowtable;
-    private List<Set<String>> hashChain;
-    private List<Set<String>> reduceChain;
-    private MessageDigest algorithm;
+    private final List<String> passwords;
+    private final List<Character> characters;
+    private final Map<String, String> rainbowTable;
+    private final List<Set<String>> hashChain;
+    private final List<Set<String>> reduceChain;
+    private final MessageDigest algorithm;
 
+    /**
+     * Konstruktor der Klasse, initialisiert alle benötigten Datenstrukturen und generiert die Rainbow-Tabelle
+     */
     public RainbowTable() {
         passwords = new ArrayList<>();
         characters = new ArrayList<>();
-        rainbowtable = new HashMap<>();
+        rainbowTable = new HashMap<>();
         hashChain = new ArrayList<>();
         reduceChain = new ArrayList<>();
 
         try {
             algorithm = MessageDigest.getInstance("MD5");
         } catch(NoSuchAlgorithmException nsae) {
-            System.out.println("The algorithm was not found exit");
             throw new RuntimeException(nsae.getCause());
         }
 
@@ -40,32 +42,45 @@ public class RainbowTable {
         initRainbowTable();
     }
 
+    /**
+     * Reduziert den gegebenen Hash-Wert in eine Zeichenkette, die als Passwort dient
+     * @param hash Der zu reduzierende Hash-Wert
+     * @param layer Die Ebene, auf der die Reduzierung stattfindet
+     * @return Das resultierende reduzierte Passwort
+     */
     public String reduce(String hash, int layer) {
 
-        int passwordLenght = 7;
+        int passwordLength = 7;
         BigInteger hashValue = new BigInteger(hash, 16);
         hashValue = hashValue.add(BigInteger.valueOf(layer));
-        String result = "";
+        StringBuilder result = new StringBuilder();
         BigInteger size = BigInteger.valueOf(characters.size());
         
-        for(int i = 0; i < passwordLenght; i++) {
+        for(int i = 0; i < passwordLength; i++) {
             int index = hashValue.mod(size).intValueExact();
             hashValue = hashValue.divide(size);
             char r = characters.get(index);
-            result = r + result;
+            result.insert(0, r);
         }
          
-        return result;
+        return result.toString();
     }
 
+    /**
+     * Erzeugt einen Hash-Wert aus dem gegebenen Passwort
+     * @param password Das Passwort, das gehasht werden soll
+     * @return Der resultierende Hash-Wert
+     */
     public String hash(String password) {
         algorithm.update(password.getBytes());
         byte[] digest = algorithm.digest();
         BigInteger convertBytes = new BigInteger(1, digest);
-        String hashValue = convertBytes.toString(16);
-        return hashValue;
+        return convertBytes.toString(16);
     }
 
+    /**
+     * Füllt die Liste der möglichen Zeichen für Passwörter
+     */
     private void fillCharacters(){
         
         // add characters 1-9
@@ -74,15 +89,21 @@ public class RainbowTable {
             characters.add(character);
         }
 
-        // add lowercast characters a-z
+        // add lowercase characters a-z
         for(int i = 0; i < 26; i++) {
             char character = (char)('a' + i);
             characters.add(character);
         }
     }
 
+    /**
+     * Generiert rekursiv alle möglichen Passwörter
+     * @param password Das aktuelle Passwort
+     * @param index Der aktuelle Index
+     * @param numberOfPasswords Die Anzahl der generierten Passwörter
+     */
     private void generatePasswords(String password, int index, AtomicInteger numberOfPasswords) {
-        StringBuffer currentPassword = new StringBuffer(password);
+        StringBuilder currentPassword = new StringBuilder(password);
         for(char c : characters) {
 
             if(index >= password.length() || numberOfPasswords.get() >= 2000) {
@@ -99,6 +120,11 @@ public class RainbowTable {
         }
     }
 
+    /**
+     * Findet die Ebene, auf der der gegebene Hash-Wert zuerst erscheint
+     * @param hash Der zu suchende Hash-Wert
+     * @return Die Ebene, auf der der Hash-Wert gefunden wurde, oder -1, wenn er nicht gefunden wurde
+     */
     public int findHashLayer(String hash) {
         int currentLayer = 0;
         for(Set<String> layer : hashChain) {
@@ -110,6 +136,12 @@ public class RainbowTable {
         return -1;
     }
 
+
+    /**
+     * Findet die Ebene, auf der der gegebene reduzierte Hash-Wert zuerst erscheint
+     * @param hash Der zu suchende reduzierte Hash-Wert
+     * @return Die Ebene, auf der der reduzierte Hash-Wert gefunden wurde, oder -1, wenn er nicht gefunden wurde
+     */
     public int findReduceLayer(String hash) {
         int currentLayer = 0;
         for(Set<String> layer : reduceChain) {
@@ -121,6 +153,9 @@ public class RainbowTable {
         return -1;
     }
 
+    /**
+     * Initialisiert die Listen für die Hash- und Reduzier ketten
+     */
     private void initLayers(){
         for(int i = 0; i < 2000; i++) {
             hashChain.add(new HashSet<>());
@@ -128,6 +163,9 @@ public class RainbowTable {
         }
     }
 
+    /**
+     * Initialisiert die Rainbow-Tabelle
+     */
     private void initRainbowTable() {
         for(String password : passwords) {
             int layer = 0;
@@ -143,13 +181,19 @@ public class RainbowTable {
             }
 
             // the last reduce value is stored in a map for easy access
-            rainbowtable.put(reduce(value, layer), password);
+            rainbowTable.put(reduce(value, layer), password);
         }
     }
 
+
+    /**
+     * Folgt der Kette von Hash- und Reduzier werten, um das ursprüngliche Passwort zu finden
+     * @param hash Der zu suchende Hash-Wert
+     * @param layer Die Ebene, auf der die Suche beginnt
+     * @return Das gefundene Passwort oder null, wenn es nicht gefunden wurde
+     */
     private String followChain(String hash, int layer) {
         if(layer < 0) {
-            System.out.println("Reached the base case");
             return null;
         }
 
@@ -159,9 +203,8 @@ public class RainbowTable {
         // follow the chain
         while(currentLayer < 2000) {
             reducedHash = reduce(reducedHash, currentLayer);
-            if(rainbowtable.containsKey(reducedHash)) {
-                String result = rainbowtable.get(reducedHash);
-                return result;
+            if(rainbowTable.containsKey(reducedHash)) {
+                return rainbowTable.get(reducedHash);
             }
 
             reducedHash = hash(reducedHash);
@@ -172,8 +215,12 @@ public class RainbowTable {
         return followChain(hash, layer-1);
     }
 
+    /**
+     * Findet das Klartext-Passwort für den gegebenen Hash-Wert
+     * @param hash Der zu suchende Hash-Wert
+     * @return Das gefundene Passwort oder null, wenn es nicht gefunden wurde
+     */
     public String findClearText(String hash) {
-        String result = followChain(hash, hashChain.size());
-        return result;
+        return followChain(hash, hashChain.size());
     }
 }
