@@ -14,6 +14,7 @@ import org.junit.*;
 public class RainbowTableTest {
     
     RainbowTable table = new RainbowTable();
+    GenerateRainbowTable generateTable = new GenerateRainbowTable();
 
     @Test
     public void testHash() {
@@ -23,7 +24,7 @@ public class RainbowTableTest {
         String shouldBeHash = "29c3eea3f305d6b823f562ac4be35217";
 
         //when calling the method
-        String myHash = table.hash(word);
+        String myHash = generateTable.hash(word);
 
         assertEquals(shouldBeHash, myHash);
     }
@@ -33,7 +34,7 @@ public class RainbowTableTest {
         String hash = "29c3eea3f305d6b823f562ac4be35217";
         String shouldBeReduce = "87inwgn";
 
-        String myReduce = table.reduce(hash, 0);
+        String myReduce = generateTable.reduce(hash, 0);
     
         assertEquals(myReduce, shouldBeReduce);
     }
@@ -87,7 +88,7 @@ public class RainbowTableTest {
 
         // random hash which should not be found
         String randomPassword = "1234";
-        String hash = table.hash(randomPassword);
+        String hash = generateTable.hash(randomPassword);
 
         foundPassword = table.findClearText(hash);
         assertEquals(foundPassword, null);
