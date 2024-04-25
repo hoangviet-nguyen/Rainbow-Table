@@ -144,7 +144,6 @@ public class RainbowTable {
 
             // the last reduce value is stored in a map for easy access
             rainbowtable.put(reduce(value, layer), password);
-            break;
         }
     }
 
