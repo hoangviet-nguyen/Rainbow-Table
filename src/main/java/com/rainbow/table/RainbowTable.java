@@ -16,8 +16,8 @@ public class RainbowTable {
     private List<String> passwords;
     private List<Character> characters;
     private Map<String, String> rainbowtable;
-    private List<Set<String>> hashChain;
-    private List<Set<String>> reduceChain;
+    private List<List<String>> hashChain;
+    private List<List<String>> reduceChain;
     private MessageDigest algorithm;
 
     public RainbowTable() {
@@ -101,7 +101,7 @@ public class RainbowTable {
 
     public int findHashLayer(String hash) {
         int currentLayer = 0;
-        for(Set<String> layer : hashChain) {
+        for(List<String> layer : hashChain) {
             if(layer.contains(hash)) {
                 return currentLayer;
             }
@@ -112,7 +112,7 @@ public class RainbowTable {
 
     public int findReduceLayer(String hash) {
         int currentLayer = 0;
-        for(Set<String> layer : reduceChain) {
+        for(List<String> layer : reduceChain) {
             if(layer.contains(hash)) {
                 return currentLayer;
             }
@@ -123,8 +123,8 @@ public class RainbowTable {
 
     private void initLayers(){
         for(int i = 0; i < 2000; i++) {
-            hashChain.add(new HashSet<>());
-            reduceChain.add(new HashSet<>()); 
+            hashChain.add(new ArrayList<>());
+            reduceChain.add(new ArrayList<>()); 
         }
     }
 
@@ -175,5 +175,10 @@ public class RainbowTable {
     public String findClearText(String hash) {
         String result = followChain(hash, hashChain.size());
         return result;
+    }
+
+    public String getPasswd(String password, int hashLayer) {
+        int passIndex = passwords.indexOf(password);
+        return reduceChain.get(hashLayer -1).get(passIndex);
     }
 }
