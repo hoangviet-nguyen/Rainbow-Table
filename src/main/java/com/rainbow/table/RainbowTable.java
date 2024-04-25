@@ -41,8 +41,22 @@ public class RainbowTable {
             }
             scanner.close();
 
-            // lese hashChain von hashChain.txt
-            scanner = new Scanner(new File(path + "hashChain.txt"));
+            // Lese die erste Hälfte der hashChain von hashChain1.txt
+            scanner = new Scanner(new File(path + "hashChain1.txt"));
+            currentList = new ArrayList<>();
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                if (line.equals("---")) {
+                    hashChain.add(currentList);
+                    currentList = new ArrayList<>();
+                } else {
+                    currentList.add(line);
+                }
+            }
+            scanner.close();
+
+            // Lese die zweite Hälfte der hashChain von hashChain2.txt
+            scanner = new Scanner(new File(path + "hashChain2.txt"));
             currentList = new ArrayList<>();
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();

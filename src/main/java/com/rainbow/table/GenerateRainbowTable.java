@@ -70,7 +70,6 @@ public class GenerateRainbowTable {
      */
     public String reduce(String hash, int layer) {
 
-
         int passwordLength = 7;
         BigInteger hashValue = new BigInteger(hash, 16);
         hashValue = hashValue.add(BigInteger.valueOf(layer));
@@ -177,9 +176,22 @@ public class GenerateRainbowTable {
             }
             writer.close();
 
-            // Schreibe hashChain in hashChain.txt
-            writer = new PrintWriter(path + "hashChain.txt", "UTF-8");
-            for (List<String> hashList : hashChain) {
+            // HashChain zu gross um es in einer Datei zu pushen, deswegen in 2 .txt files
+            // Schreibe die erste Hälfte der hashChain in hashChain1.txt
+            writer = new PrintWriter(path + "hashChain1.txt", "UTF-8");
+            for (int i = 0; i < hashChain.size() / 2; i++) {
+                List<String> hashList = hashChain.get(i);
+                for (String hash : hashList) {
+                    writer.println(hash);
+                }
+                writer.println("---"); // Separiert listen in File ---
+            }
+            writer.close();
+
+            // Schreibe die zweite Hälfte der hashChain in hashChain2.txt
+            writer = new PrintWriter(path + "hashChain2.txt", "UTF-8");
+            for (int i = hashChain.size() / 2; i < hashChain.size(); i++) {
+                List<String> hashList = hashChain.get(i);
                 for (String hash : hashList) {
                     writer.println(hash);
                 }
