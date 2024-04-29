@@ -15,8 +15,6 @@ public class GenerateRainbowTable {
     private final List<String> passwords;
     private final List<Character> characters;
     private final Map<String, String> rainbowTable;
-    private final List<List<String>> hashChain;
-    private final List<List<String>> reduceChain;
     private static MessageDigest algorithm;
 
     /**
@@ -25,8 +23,6 @@ public class GenerateRainbowTable {
     public GenerateRainbowTable () {
         passwords = new ArrayList<>();
         rainbowTable = new HashMap<>();
-        hashChain = new ArrayList<>();
-        reduceChain = new ArrayList<>();
         characters = new ArrayList<>();
 
         try {
@@ -50,9 +46,7 @@ public class GenerateRainbowTable {
 
             // make the reduce and hash chain, each chain has 2000 entries
             while (layer < 1999) {
-                hashChain.get(layer).add(value);
                 value = reduce(value, layer);
-                reduceChain.get(layer).add(value);
                 value = hash(value);
                 layer++;
             }
@@ -141,66 +135,16 @@ public class GenerateRainbowTable {
     }
 
     /**
-     * Initialisiert die Listen für die Hash- und Reduzier ketten
-     */
-    private void initLayers(){
-        for(int i = 0; i < 2000; i++) {
-            hashChain.add(new ArrayList<>());
-            reduceChain.add(new ArrayList<>());
-        }
-    }
-
-    /**
      * Schreibt die generierten Daten in verschiedene .txt-Dateien
      */
     public void WriteToFile() {
-        initLayers();
         initRainbowTable();
 
         String path = "src/main/resources/";
         try {
-            // Schreibe passwords in passwords.txt
-            PrintWriter writer = new PrintWriter(path + "passwords.txt", "UTF-8");
-            for (String password : passwords) {
-                writer.println(password);
-            }
-            writer.close();
-
-            // Schreibe reduceChain in reduceChain.txt
-            writer = new PrintWriter(path + "reduceChain.txt", "UTF-8");
-            for (List<String> reduceList : reduceChain) {
-                for (String reduce : reduceList) {
-                    writer.println(reduce);
-                }
-                writer.println("---"); // Separiert listen in File ---
-            }
-            writer.close();
-
-            // HashChain zu gross um es in einer Datei zu pushen, deswegen in 2 .txt files
-            // Schreibe die erste Hälfte der hashChain in hashChain1.txt
-            writer = new PrintWriter(path + "hashChain1.txt", "UTF-8");
-            for (int i = 0; i < hashChain.size() / 2; i++) {
-                List<String> hashList = hashChain.get(i);
-                for (String hash : hashList) {
-                    writer.println(hash);
-                }
-                writer.println("---"); // Separiert listen in File ---
-            }
-            writer.close();
-
-            // Schreibe die zweite Hälfte der hashChain in hashChain2.txt
-            writer = new PrintWriter(path + "hashChain2.txt", "UTF-8");
-            for (int i = hashChain.size() / 2; i < hashChain.size(); i++) {
-                List<String> hashList = hashChain.get(i);
-                for (String hash : hashList) {
-                    writer.println(hash);
-                }
-                writer.println("---"); // Separiert listen in File ---
-            }
-            writer.close();
 
             // Schreibe rainbowTable in rainbowTable.txt
-            writer = new PrintWriter(path + "rainbowTable.txt", "UTF-8");
+            PrintWriter writer = new PrintWriter(path + "rainbowTable.txt", "UTF-8");
             for (Map.Entry<String, String> entry : rainbowTable.entrySet()) {
                 writer.println(entry.getKey() + " : " + entry.getValue());
             }

@@ -9,10 +9,8 @@ public class RainbowTable {
 
     GenerateRainbowTable generateTable = new GenerateRainbowTable();
     
-    private final List<String> passwords = new ArrayList<>();
     private final Map<String, String> rainbowTable = new HashMap<>();
     private final List<List<String>> hashChain = new ArrayList<>();
-    private final List<List<String>> reduceChain = new ArrayList<>();
     private static final String path = "src/main/resources/";
 
     /**
@@ -20,57 +18,8 @@ public class RainbowTable {
      */
     public RainbowTable() {
         try {
-            // Lese passwords von passwords.txt
-            Scanner scanner = new Scanner(new File(path + "passwords.txt"));
-            while (scanner.hasNextLine()) {
-                passwords.add(scanner.nextLine());
-            }
-            scanner.close();
-
-            // Lese reduceChain von reduceChain.txt
-            scanner = new Scanner(new File(path + "reduceChain.txt"));
-            List<String> currentList = new ArrayList<>();
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                if (line.equals("---")) {
-                    reduceChain.add(currentList);
-                    currentList = new ArrayList<>();
-                } else {
-                    currentList.add(line);
-                }
-            }
-            scanner.close();
-
-            // Lese die erste Hälfte der hashChain von hashChain1.txt
-            scanner = new Scanner(new File(path + "hashChain1.txt"));
-            currentList = new ArrayList<>();
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                if (line.equals("---")) {
-                    hashChain.add(currentList);
-                    currentList = new ArrayList<>();
-                } else {
-                    currentList.add(line);
-                }
-            }
-            scanner.close();
-
-            // Lese die zweite Hälfte der hashChain von hashChain2.txt
-            scanner = new Scanner(new File(path + "hashChain2.txt"));
-            currentList = new ArrayList<>();
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                if (line.equals("---")) {
-                    hashChain.add(currentList);
-                    currentList = new ArrayList<>();
-                } else {
-                    currentList.add(line);
-                }
-            }
-            scanner.close();
-
             // Lese rainbowTable von rainbowTable.txt
-            scanner = new Scanner(new File(path + "rainbowTable.txt"));
+            Scanner scanner = new Scanner(new File(path + "rainbowTable.txt"));
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 String[] parts = line.split(" : ");
@@ -81,39 +30,6 @@ public class RainbowTable {
         } catch (FileNotFoundException e) {
             System.out.println("An error occurred while reading from file: " + e.getMessage());
         }
-    }
-
-    /**
-     * Findet die Ebene, auf der der gegebene Hash-Wert zuerst erscheint
-     * @param hash Der zu suchende Hash-Wert
-     * @return Die Ebene, auf der der Hash-Wert gefunden wurde, oder -1, wenn er nicht gefunden wurde
-     */
-    public int findHashLayer(String hash) {
-        int currentLayer = 0;
-        for(List<String> layer : hashChain) {
-            if(layer.contains(hash)) {
-                return currentLayer;
-            }
-            currentLayer++;
-        }
-        return -1;
-    }
-
-
-    /**
-     * Findet die Ebene, auf der der gegebene reduzierte Hash-Wert zuerst erscheint
-     * @param hash Der zu suchende reduzierte Hash-Wert
-     * @return Die Ebene, auf der der reduzierte Hash-Wert gefunden wurde, oder -1, wenn er nicht gefunden wurde
-     */
-    public int findReduceLayer(String hash) {
-        int currentLayer = 0;
-        for(List<String> layer : reduceChain) {
-            if(layer.contains(hash)) {
-                return currentLayer;
-            }
-            currentLayer++;
-        }
-        return -1;
     }
 
     /**
@@ -151,7 +67,7 @@ public class RainbowTable {
      * @return Das gefundene Passwort oder null, wenn es nicht gefunden wurde
      */
     public String findClearText(String hash) {
-        return followChain(hash, hashChain.size());
+        return followChain(hash, 2000);
     }
 
     /**
@@ -160,8 +76,22 @@ public class RainbowTable {
      * @param hashLayer Die Ebene
      * @return Das Passwort, das den Hash-Wert generiert
      */
-    public String getPasswd(String passwd, int hashLayer) {
-        int startIndex = passwords.indexOf(passwd);
-        return reduceChain.get(hashLayer -1).get(startIndex);
+    public String getPasswd(String startingpoint, String hash) {
+        String currentHash = generateTable.hash(startingpoint);
+        String result = "";
+    
+        int i = 0;
+        while (i < 2000) {
+        
+            if(currentHash.equals(hash)) {
+                return result;
+            }
+        
+            result = generateTable.reduce(currentHash, i);
+            currentHash = generateTable.hash(result);
+            i++;
+        }
+
+        return result; 
     }
 }
