@@ -49,8 +49,8 @@ public class RainbowTable {
         // follow the chain
         while(currentLayer < 2000) {
             reducedHash = generateTable.reduce(reducedHash, currentLayer);
-            if(rainbowTable.containsKey(reducedHash)) {
-                return rainbowTable.get(reducedHash);
+            if (currentLayer == 1999 && (rainbowTable.containsKey(reducedHash))) {
+                    return rainbowTable.get(reducedHash);
             }
 
             reducedHash = generateTable.hash(reducedHash);
